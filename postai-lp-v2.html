@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostAI — SNS投稿をAIに任せて本業に集中</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --ink: #0f0f0f;
+    --ink2: #555;
+    --bg: #f5f3ee;
+    --white: #fff;
+    --accent: #1a1aff;
+    --accent2: #ff3d00;
+    --border: #e0ddd5;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); overflow-x: hidden; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  /* NAV */
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; max-width: 900px; margin: 0 auto; position: sticky; top: 0; background: rgba(245,243,238,0.9); backdrop-filter: blur(12px); z-index: 100; border-bottom: 1px solid transparent; }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; text-decoration: none; color: var(--ink); }
+  .logo span { color: var(--accent); }
+  .nav-cta { background: var(--ink); color: #fff; padding: 9px 22px; border-radius: 100px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s; text-decoration: none; }
+  .nav-cta:hover { opacity: 0.8; }
+
+  /* HERO */
+  .hero { padding: 90px 24px 64px; max-width: 900px; margin: 0 auto; }
+  .badge { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border); border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 500; color: var(--ink2); margin-bottom: 32px; }
+  .badge-dot { width: 7px; height: 7px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  h1 { font-family: 'Syne', sans-serif; font-size: clamp(44px, 8vw, 76px); font-weight: 800; line-height: 1.0; letter-spacing: -2.5px; margin-bottom: 28px; }
+  h1 em { font-style: normal; color: var(--accent); }
+  .hero-sub { font-size: 18px; color: var(--ink2); line-height: 1.7; max-width: 540px; margin-bottom: 44px; }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .btn-primary { background: var(--accent); color: #fff; padding: 15px 30px; border-radius: 100px; font-size: 15px; font-weight: 500; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: transform 0.15s, box-shadow 0.15s; text-decoration: none; display: inline-block; }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(26,26,255,0.28); }
+  .btn-sec { background: transparent; color: var(--ink); padding: 15px 30px; border-radius: 100px; font-size: 15px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; transition: border-color 0.15s; text-decoration: none; display: inline-block; }
+  .btn-sec:hover { border-color: #aaa; }
+  .hero-note { font-size: 13px; color: #aaa; margin-top: 16px; }
+
+  /* PREVIEW */
+  .preview-wrap { margin: 52px 0; }
+  .preview { background: #0f0f0f; border-radius: 20px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.18); }
+  .preview-bar { background: #1a1a1a; padding: 14px 18px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .preview-body { background: #12121f; padding: 28px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .p-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 18px; }
+  .p-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .p-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .p-card-label { font-size: 11px; color: rgba(255,255,255,0.45); font-family: 'DM Sans', sans-serif; }
+  .p-card-num { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .p-card-sub { font-size: 12px; color: #22c55e; }
+  .p-bar { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-top: 14px; overflow: hidden; }
+  .p-bar-fill { height: 100%; border-radius: 2px; }
+  .p-post { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+  .p-tags { display: flex; gap: 6px; margin-top: 10px; }
+  .p-tag-x { font-size: 10px; padding: 2px 10px; background: rgba(26,26,255,0.18); color: #8888ff; border-radius: 4px; }
+  .p-tag-ig { font-size: 10px; padding: 2px 10px; background: rgba(255,61,0,0.18); color: #ff8855; border-radius: 4px; }
+  .p-sched { display: flex; flex-direction: column; gap: 7px; }
+  .p-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; background: rgba(255,255,255,0.03); border-radius: 7px; font-size: 11px; color: rgba(255,255,255,0.55); }
+  .tag-green { padding: 2px 10px; border-radius: 100px; font-size: 10px; background: rgba(34,197,94,0.18); color: #22c55e; }
+  .tag-amber { padding: 2px 10px; border-radius: 100px; font-size: 10px; background: rgba(250,190,50,0.18); color: #f0a500; }
+
+  /* LOGOS */
+  .logos { padding: 32px 0; text-align: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 0; }
+  .logos p { font-size: 12px; color: #bbb; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 1.5px; }
+  .logo-row { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+  .logo-item { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: #ccc; }
+
+  /* FEATURES */
+  .features { padding: 96px 0; }
+  .sec-eyebrow { font-size: 12px; font-weight: 500; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
+  .sec-title { font-family: 'Syne', sans-serif; font-size: clamp(30px, 4vw, 44px); font-weight: 800; letter-spacing: -1px; line-height: 1.1; margin-bottom: 52px; }
+  .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .feat-card { background: var(--white); border: 1px solid var(--border); border-radius: 18px; padding: 32px; transition: transform 0.2s, box-shadow 0.2s; }
+  .feat-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.07); }
+  .feat-card.accent-card { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .feat-icon { font-size: 28px; margin-bottom: 18px; }
+  .feat-card h3 { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.5px; }
+  .feat-card p { font-size: 14px; line-height: 1.7; color: var(--ink2); }
+  .feat-card.accent-card p { color: rgba(255,255,255,0.75); }
+
+  /* HOW IT WORKS */
+  .how { padding: 96px 0; background: #fff; }
+  .steps { display: flex; flex-direction: column; gap: 0; margin-top: 52px; }
+  .step { display: flex; gap: 32px; align-items: flex-start; padding: 32px 0; border-bottom: 1px solid var(--border); }
+  .step:last-child { border-bottom: none; }
+  .step-num { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; color: var(--accent); opacity: 0.15; flex-shrink: 0; width: 60px; line-height: 1; }
+  .step-body h3 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .step-body p { font-size: 15px; color: var(--ink2); line-height: 1.7; }
+
+  /* PRICING */
+  .pricing { padding: 96px 0; background: var(--ink); }
+  .pricing .sec-eyebrow { color: #7777ff; }
+  .pricing .sec-title { color: #fff; }
+  .price-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 52px; }
+  .price-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: 18px; padding: 32px; position: relative; }
+  .price-card.popular { background: #fff; color: var(--ink); border: none; }
+  .popular-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--accent2); color: #fff; font-size: 11px; font-weight: 500; padding: 4px 16px; border-radius: 100px; white-space: nowrap; }
+  .price-name { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 10px; font-weight: 500; }
+  .price-card.popular .price-name { color: var(--ink2); }
+  .price-amount { font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 800; color: #fff; letter-spacing: -2px; }
+  .price-card.popular .price-amount { color: var(--ink); }
+  .price-period { font-size: 14px; color: rgba(255,255,255,0.35); margin-bottom: 24px; }
+  .price-card.popular .price-period { color: #999; }
+  .price-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .price-list li { font-size: 14px; color: rgba(255,255,255,0.6); display: flex; gap: 10px; align-items: flex-start; }
+  .price-card.popular .price-list li { color: var(--ink2); }
+  .check { color: #22c55e; flex-shrink: 0; }
+  .price-btn { width: 100%; margin-top: 28px; padding: 13px; border-radius: 100px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; border: 1px solid rgba(255,255,255,0.18); background: transparent; color: #fff; transition: background 0.15s, border-color 0.15s; }
+  .price-btn:hover { background: rgba(255,255,255,0.08); }
+  .price-card.popular .price-btn { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .price-card.popular .price-btn:hover { background: #0000dd; border-color: #0000dd; }
+
+  /* FAQ */
+  .faq { padding: 96px 0; }
+  .faq-list { margin-top: 52px; display: flex; flex-direction: column; gap: 0; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-q { width: 100%; background: none; border: none; padding: 22px 0; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; color: var(--ink); cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+  .faq-arrow { font-size: 20px; color: var(--ink2); transition: transform 0.2s; }
+  .faq-a { font-size: 15px; color: var(--ink2); line-height: 1.7; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s; }
+  .faq-item.open .faq-a { max-height: 200px; padding-bottom: 22px; }
+  .faq-item.open .faq-arrow { transform: rotate(45deg); }
+
+  /* CTA */
+  .cta-sec { padding: 112px 24px; text-align: center; max-width: 720px; margin: 0 auto; }
+  .cta-sec h2 { font-family: 'Syne', sans-serif; font-size: clamp(34px, 5vw, 56px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; margin-bottom: 20px; }
+  .cta-sec p { font-size: 17px; color: var(--ink2); margin-bottom: 40px; }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--border); padding: 32px 24px; display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 0 auto; flex-wrap: wrap; gap: 12px; }
+  footer p { font-size: 13px; color: #aaa; }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 13px; color: #aaa; text-decoration: none; }
+  .footer-links a:hover { color: var(--ink); }
+
+  @media (max-width: 680px) {
+    .preview-body, .feat-grid, .price-grid { grid-template-columns: 1fr; }
+    .step { flex-direction: column; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo">post<span>ai</span></a>
+  <a href="https://forms.gle/82hixRAKVPRzQq357" class="nav-cta">無料で始める</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero wrap">
+  <div class="badge"><span class="badge-dot"></span> ベータ版 公開中・今なら無料</div>
+  <h1>SNS投稿を<br><em>AIに任せて</em><br>本業に集中</h1>
+  <p class="hero-sub">X・Instagram・YouTubeの投稿文をAIが自動生成。スケジュール設定で複数SNSに一括配信。フォロワーを増やす仕組みを、あなたの代わりに動かし続けます。</p>
+  <div class="hero-cta">
+    <a href="https://forms.gle/82hixRAKVPRzQq357" class="btn-primary">14日間無料で試す →</a>
+    <a href="#how" class="btn-sec">仕組みを見る</a>
+  </div>
+  <p class="hero-note">クレジットカード不要・いつでもキャンセル可</p>
+</div>
+
+<!-- PREVIEW -->
+<div class="wrap preview-wrap">
+  <div class="preview">
+    <div class="preview-bar">
+      <div class="dot" style="background:#ff5f57"></div>
+      <div class="dot" style="background:#febc2e"></div>
+      <div class="dot" style="background:#28c840"></div>
+    </div>
+    <div class="preview-body">
+      <div class="p-card">
+        <div class="p-card-head">
+          <div class="p-icon" style="background:rgba(26,26,255,0.2)">📊</div>
+          <span class="p-card-label">今月のリーチ</span>
+        </div>
+        <div class="p-card-num">128K</div>
+        <div class="p-card-sub">▲ 34% 先月比</div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:72%;background:#1a1aff"></div></div>
+      </div>
+      <div class="p-card">
+        <div class="p-card-head">
+          <div class="p-icon" style="background:rgba(34,197,94,0.2)">✨</div>
+          <span class="p-card-label">AI生成プレビュー</span>
+        </div>
+        <div class="p-post">「生産性を3倍にした、私の朝のルーティン5選。1つ目は…」</div>
+        <div class="p-tags">
+          <span class="p-tag-x">X</span>
+          <span class="p-tag-ig">Instagram</span>
+        </div>
+      </div>
+      <div class="p-card">
+        <div class="p-card-head">
+          <div class="p-icon" style="background:rgba(250,199,117,0.2)">🗓</div>
+          <span class="p-card-label">投稿スケジュール</span>
+        </div>
+        <div class="p-sched">
+          <div class="p-row">月曜 9:00 <span class="tag-green">予約済</span></div>
+          <div class="p-row">水曜 12:00 <span class="tag-green">予約済</span></div>
+          <div class="p-row">金曜 18:00 <span class="tag-amber">生成中</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGOS -->
+<div class="logos wrap">
+  <p>対応プラットフォーム</p>
+  <div class="logo-row">
+    <span class="logo-item">X (Twitter)</span>
+    <span class="logo-item">Instagram</span>
+    <span class="logo-item">YouTube</span>
+    <span class="logo-item">Threads</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div class="features">
+  <div class="wrap">
+    <div class="sec-eyebrow">機能</div>
+    <div class="sec-title">SNS運用に必要な<br>すべてが揃っている</div>
+    <div class="feat-grid">
+      <div class="feat-card accent-card">
+        <div class="feat-icon">🤖</div>
+        <h3>AI投稿文生成</h3>
+        <p>テーマを入力するだけで、各SNSに最適化された投稿文をAIが自動生成。ハッシュタグも含めて完成形を提案します。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🗓</div>
+        <h3>スケジュール自動投稿</h3>
+        <p>ベストな時間帯を自動で判断し、事前に作った投稿を決まった時間に自動配信。手動作業ゼロで運用できます。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📡</div>
+        <h3>複数SNS一括配信</h3>
+        <p>1つの投稿をX・Instagram・YouTubeに同時配信。それぞれのフォーマットに合わせて自動調整します。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <h3>分析ダッシュボード</h3>
+        <p>いいね・フォロワー・リーチ数をひとつの画面で確認。何が伸びているか一目でわかります。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="how" id="how">
+  <div class="wrap">
+    <div class="sec-eyebrow">使い方</div>
+    <div class="sec-title">3ステップで<br>SNS運用が自動化される</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>テーマを入力する</h3>
+          <p>「今日投稿したいこと」を一言入力するだけ。「新しいカフェに行った」「仕事のコツを共有したい」など、どんなテーマでもOKです。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>AIが投稿文を生成する</h3>
+          <p>各SNSに合った文体・長さ・ハッシュタグをAIが自動で考えます。気に入らなければワンクリックで再生成できます。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>スケジュールして完了</h3>
+          <p>投稿する日時を選んで「予約」するだけ。あとはPostAIが自動で複数SNSに投稿し続けます。あなたは本業に集中できます。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="sec-eyebrow">料金プラン</div>
+    <div class="sec-title">シンプルな料金設定</div>
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="price-name">フリー</div>
+        <div class="price-amount">¥0</div>
+        <div class="price-period">/ 月（永久無料）</div>
+        <ul class="price-list">
+          <li><span class="check">✓</span>月10投稿まで</li>
+          <li><span class="check">✓</span>2SNS連携</li>
+          <li><span class="check">✓</span>AI生成（基本）</li>
+        </ul>
+        <button class="price-btn">無料で始める</button>
+      </div>
+      <div class="price-card popular">
+        <div class="popular-badge">人気 No.1</div>
+        <div class="price-name">スタンダード</div>
+        <div class="price-amount">¥980</div>
+        <div class="price-period">/ 月（税込）</div>
+        <ul class="price-list">
+          <li><span class="check">✓</span>投稿数無制限</li>
+          <li><span class="check">✓</span>全SNS対応</li>
+          <li><span class="check">✓</span>AI生成（高品質）</li>
+          <li><span class="check">✓</span>分析ダッシュボード</li>
+          <li><span class="check">✓</span>優先メールサポート</li>
+        </ul>
+        <button class="price-btn">14日間無料で試す</button>
+      </div>
+      <div class="price-card">
+        <div class="price-name">ビジネス</div>
+        <div class="price-amount">¥2,980</div>
+        <div class="price-period">/ 月（税込）</div>
+        <ul class="price-list">
+          <li><span class="check">✓</span>スタンダード全機能</li>
+          <li><span class="check">✓</span>チーム5名まで</li>
+          <li><span class="check">✓</span>カスタム分析レポート</li>
+          <li><span class="check">✓</span>専任サポート</li>
+        </ul>
+        <button class="price-btn">相談する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <div class="wrap">
+    <div class="sec-eyebrow">よくある質問</div>
+    <div class="sec-title">気になることを<br>まとめました</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">無料プランはずっと使えますか？<span class="faq-arrow">+</span></button>
+        <div class="faq-a">はい、フリープランは期限なく永久無料でご利用いただけます。月10投稿・2SNS連携の範囲内であれば、ずっと無料のままです。</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">クレジットカードなしで試せますか？<span class="faq-arrow">+</span></button>
+        <div class="faq-a">はい。14日間の無料トライアルはクレジットカード不要で開始できます。トライアル終了後も自動課金はされません。</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">どのSNSに対応していますか？<span class="faq-arrow">+</span></button>
+        <div class="faq-a">X（Twitter）、Instagram、YouTube、Threadsに対応しています。今後もプラットフォームを順次追加予定です。</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">解約はいつでもできますか？<span class="faq-arrow">+</span></button>
+        <div class="faq-a">はい、いつでもマイページから解約できます。解約後も契約期間の終わりまでは引き続きご利用いただけます。</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">生成された投稿文は自分で編集できますか？<span class="faq-arrow">+</span></button>
+        <div class="faq-a">もちろんです。AIが生成した投稿文は公開前に自由に編集できます。気に入らない場合はワンクリックで再生成も可能です。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-sec">
+  <h2>今すぐSNS運用を<br>自動化しよう</h2>
+  <p>クレジットカード不要。14日間すべての機能を無料でお試しいただけます。</p>
+  <a href="https://forms.gle/82hixRAKVPRzQq357" class="btn-primary">無料で始める →</a>
+</div>
+
+<footer class="wrap">
+  <p>© 2026 PostAI</p>
+  <div class="footer-links">
+    <a href="#">プライバシーポリシー</a>
+    <a href="#">利用規約</a>
+    <a href="#">お問い合わせ</a>
+  </div>
+</footer>
+
+<script>
+  function toggleFaq(btn) {
+    const item = btn.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+</body>
+</html>
